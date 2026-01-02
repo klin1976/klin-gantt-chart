@@ -11,20 +11,20 @@
 
 ## 🚀 快速開始
 
-### 方法一：使用 npm 安裝 (推薦)
 
 1. **複製專案**
    ```bash
    git clone [https://github.com/klin1976/klin-gantt-chart.git](https://github.com/klin1976/klin-gantt-chart.git)
-安裝套件
+
+2. **安裝套件**
 
 Bash
 
 npm install
-啟動專案
+
+3. **啟動專案**
 
 Bash
 
 npm run dev
 
-儲存並上傳： 修改存檔後，在終端機 (PowerShell) 執行以下指令更新到 GitHub：
