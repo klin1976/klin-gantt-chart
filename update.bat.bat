@@ -1,31 +1,31 @@
 @echo off
-chcp 65001 >nul
+:: 切換到這個 .bat 檔案所在的資料夾 (這行最重要！)
+cd /d "%~dp0"
+
 echo ==========================================
-echo       GitHub 自動上傳小工具 - Klin
+echo       GitHub Auto Uploader - Klin
 echo ==========================================
 echo.
 
-:: 1. 加入所有檔案
-echo [1/3] 正在加入變更檔案 (git add)...
+:: 1. Add files
+echo [1/3] Adding files (git add)...
 git add .
 
-:: 2. 詢問提交說明
-set /p commit_msg="請輸入提交說明 (直接按 Enter 則使用 'Update code'): "
-
-:: 如果使用者沒輸入，就用預設文字
+:: 2. Commit
+set /p commit_msg="Enter commit message (Press Enter for 'Update code'): "
 if "%commit_msg%"=="" set commit_msg=Update code
 
 echo.
-echo [2/3] 正在提交版本 (git commit)...
+echo [2/3] Committing (git commit)...
 git commit -m "%commit_msg%"
 
-:: 3. 推送到遠端
+:: 3. Push
 echo.
-echo [3/3] 正在上傳到 GitHub (git push)...
+echo [3/3] Pushing to GitHub (git push)...
 git push
 
 echo.
 echo ==========================================
-echo              上傳完成！
+echo              Done!
 echo ==========================================
 pause
