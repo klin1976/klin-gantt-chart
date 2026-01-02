@@ -45,6 +45,7 @@ export default function App() {
   const [watermarkColor, setWatermarkColor] = useState('#94a3b8');
   const [watermarkOpacity, setWatermarkOpacity] = useState(0.3);
   const [watermarkFontSize, setWatermarkFontSize] = useState(24);
+  const [watermarkRotate, setWatermarkRotate] = useState(-30); // 新增：旋轉角度狀態
 
   const [newTask, setNewTask] = useState({
     name: '',
@@ -107,6 +108,7 @@ export default function App() {
     };
   };
 
+  // Helper: 產生浮水印樣式物件 (更新：支援旋轉)
   const getWatermarkStyle = () => {
     const baseStyle = {
       position: 'absolute',
@@ -118,6 +120,7 @@ export default function App() {
       whiteSpace: 'nowrap',
       fontFamily: 'sans-serif',
       fontSize: `${watermarkFontSize}px`,
+      transformOrigin: 'center', // 確保旋轉中心正確
     };
 
     if (watermarkPos === 'center') {
@@ -125,12 +128,17 @@ export default function App() {
         ...baseStyle,
         top: '50%',
         left: '50%',
-        transform: 'translate(-50%, -50%) rotate(-30deg)',
+        transform: `translate(-50%, -50%) rotate(${watermarkRotate}deg)`, // 應用旋轉
         padding: '10px 40px',
       };
     }
 
-    const cornerStyle = { ...baseStyle };
+    // 角落位置也支援旋轉
+    const cornerStyle = {
+      ...baseStyle,
+      transform: `rotate(${watermarkRotate}deg)`
+    };
+
     if (watermarkPos.includes('top')) cornerStyle.top = '20px';
     if (watermarkPos.includes('bottom')) cornerStyle.bottom = '20px';
     if (watermarkPos.includes('left')) cornerStyle.left = '20px';
@@ -230,7 +238,7 @@ export default function App() {
     const finalFileName = `${saveFileName}.json`;
 
     const projectData = {
-      version: 3,
+      version: 4, // Version bump for rotation support
       createdAt: new Date().toISOString(),
       categories: categories,
       tasks: tasks,
@@ -239,7 +247,8 @@ export default function App() {
         pos: watermarkPos,
         color: watermarkColor,
         opacity: watermarkOpacity,
-        fontSize: watermarkFontSize
+        fontSize: watermarkFontSize,
+        rotate: watermarkRotate // 儲存旋轉角度
       }
     };
 
@@ -295,6 +304,7 @@ export default function App() {
             setWatermarkColor(data.watermark.color || '#94a3b8');
             setWatermarkOpacity(data.watermark.opacity !== undefined ? data.watermark.opacity : 0.3);
             setWatermarkFontSize(data.watermark.fontSize || 24);
+            setWatermarkRotate(data.watermark.rotate !== undefined ? data.watermark.rotate : -30); // 載入旋轉角度
           }
         }
         else if (Array.isArray(data)) {
@@ -314,7 +324,6 @@ export default function App() {
   };
 
   const executeExportImage = async () => {
-    // 修正：檢查 window.html2canvas 而非直接檢查 import
     if (!window.html2canvas || !chartRef.current) {
       alert("組件尚未加載完成");
       return;
@@ -342,7 +351,6 @@ export default function App() {
     try {
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // 修正：使用 window.html2canvas
       const canvas = await window.html2canvas(chartRef.current, {
         useCORS: true,
         scale: 2,
@@ -575,6 +583,12 @@ export default function App() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">字體大小 ({watermarkFontSize}px)</label>
                 <div className="flex items-center h-[46px]">
                   <input type="range" min="12" max="128" step="2" value={watermarkFontSize} onChange={e => setWatermarkFontSize(parseInt(e.target.value))} className="w-full cursor-pointer accent-indigo-600" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">旋轉角度 ({watermarkRotate}°)</label>
+                <div className="flex items-center h-[46px]">
+                  <input type="range" min="-180" max="180" step="5" value={watermarkRotate} onChange={e => setWatermarkRotate(parseInt(e.target.value))} className="w-full cursor-pointer accent-indigo-600" />
                 </div>
               </div>
               <div>
