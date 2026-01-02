@@ -1,16 +1,30 @@
-# React + Vite
+# Klin Gantt Chart (甘特圖專案) 📊
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+這是一個簡單易用的甘特圖工具，支援專案排程管理、拖拉操作等功能。
 
-Currently, two official plugins are available:
+## ✨ 功能特色
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔍 **多條件篩選**：依照日期、專案名稱篩選
+- 🌍 **支援多國語言**：中文、英文介面
+- ⚡ **即時互動**：使用 React 打造的流暢體驗
+- 📱 **響應式介面**：手機、平板、電腦都能用
 
-## React Compiler
+## 🚀 快速開始
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 方法一：使用 npm 安裝 (推薦)
 
-## Expanding the ESLint configuration
+1. **複製專案**
+   ```bash
+   git clone [https://github.com/klin1976/klin-gantt-chart.git](https://github.com/klin1976/klin-gantt-chart.git)
+安裝套件
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Bash
+
+npm install
+啟動專案
+
+Bash
+
+npm run dev
+
+儲存並上傳： 修改存檔後，在終端機 (PowerShell) 執行以下指令更新到 GitHub：
