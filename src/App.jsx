@@ -63,6 +63,15 @@ export default function App() {
 
   const chartRef = useRef(null);
   const fileInputRef = useRef(null);
+  const headerScrollRef = useRef(null);
+  const bodyScrollRef = useRef(null);
+
+  // Sync scroll handler
+  const handleScroll = (source, target) => {
+    if (source.current && target.current) {
+      target.current.scrollLeft = source.current.scrollLeft;
+    }
+  };
 
   // 修正：在預覽環境中，動態載入 html2canvas
   useEffect(() => {
@@ -487,7 +496,11 @@ export default function App() {
             <span>任務名稱</span>
             <span className="text-xs font-normal text-gray-500">進度</span>
           </div>
-          <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar">
+          <div
+            ref={headerScrollRef}
+            onScroll={() => handleScroll(headerScrollRef, bodyScrollRef)}
+            className="flex-1 overflow-x-auto overflow-y-hidden no-scrollbar"
+          >
             <div className="flex" style={{ width: `${dateRange.length * 40}px` }}>
               {dateRange.map((date, i) => {
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
@@ -524,7 +537,11 @@ export default function App() {
             {tasks.length === 0 && <div className="p-8 text-center text-gray-400 text-sm">尚無任務</div>}
           </div>
 
-          <div className="flex-1 overflow-x-auto relative custom-scrollbar bg-white">
+          <div
+            ref={bodyScrollRef}
+            onScroll={() => handleScroll(bodyScrollRef, headerScrollRef)}
+            className="flex-1 overflow-x-auto relative custom-scrollbar bg-white"
+          >
             <div className="relative" style={{ width: `${dateRange.length * 40}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
               <div className="absolute inset-0 flex pointer-events-none">
                 {dateRange.map((date, i) => {
@@ -760,7 +777,14 @@ export default function App() {
           </div>
         </div>
       )}
-      <style>{`.custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; } .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; } .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }`}</style>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; } 
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
