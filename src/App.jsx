@@ -47,6 +47,10 @@ export default function App() {
   const [watermarkFontSize, setWatermarkFontSize] = useState(24);
   const [watermarkRotate, setWatermarkRotate] = useState(-30); // 新增：旋轉角度狀態
 
+  // Project Info state
+  const [projectTitle, setProjectTitle] = useState('專案甘特圖');
+  const [projectSubtitle, setProjectSubtitle] = useState('視覺化專案進度與時程規劃');
+
   const [newTask, setNewTask] = useState({
     name: '',
     start: '',
@@ -70,6 +74,11 @@ export default function App() {
       document.body.removeChild(script);
     };
   }, []);
+
+  // Sync project title to document title
+  useEffect(() => {
+    document.title = projectTitle;
+  }, [projectTitle]);
 
   const { minDate, maxDate, totalDays, dateRange } = useMemo(() => {
     if (tasks.length === 0) return { minDate: new Date(), maxDate: new Date(), totalDays: 0, dateRange: [] };
@@ -221,7 +230,9 @@ export default function App() {
   const handleOpenSaveModal = (mode) => {
     setSaveMode(mode);
     const dateStr = new Date().toISOString().slice(0, 10);
-    setSaveFileName(mode === 'project' ? `gantt_project_${dateStr}` : `甘特圖截圖_${dateStr}`);
+    const safeTitle = projectTitle.replace(/[\\/:*?"<>|]/g, '_').trim();
+    const prefix = safeTitle || (mode === 'project' ? 'gantt_project' : '甘特圖截圖');
+    setSaveFileName(`${prefix}_${dateStr}`);
     setShowSaveModal(true);
   };
 
@@ -249,7 +260,9 @@ export default function App() {
         opacity: watermarkOpacity,
         fontSize: watermarkFontSize,
         rotate: watermarkRotate // 儲存旋轉角度
-      }
+      },
+      projectTitle,
+      projectSubtitle
     };
 
     const dataStr = JSON.stringify(projectData, null, 2);
@@ -306,6 +319,8 @@ export default function App() {
             setWatermarkFontSize(data.watermark.fontSize || 24);
             setWatermarkRotate(data.watermark.rotate !== undefined ? data.watermark.rotate : -30); // 載入旋轉角度
           }
+          if (data.projectTitle) setProjectTitle(data.projectTitle);
+          if (data.projectSubtitle) setProjectSubtitle(data.projectSubtitle);
         }
         else if (Array.isArray(data)) {
           setTasks(data);
@@ -400,13 +415,31 @@ export default function App() {
     <div className="flex flex-col h-screen bg-gray-50 text-gray-800 font-sans">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-20 gap-4">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-indigo-600" />
-            專案甘特圖
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            視覺化專案進度與時程規劃
-          </p>
+          <div className="flex items-center gap-2 group">
+            <Calendar className="w-6 h-6 text-indigo-600 flex-shrink-0" />
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                value={projectTitle}
+                onChange={(e) => setProjectTitle(e.target.value)}
+                className="text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-200 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-100/50"
+                placeholder="專案名稱"
+              />
+              <Edit className="w-4 h-4 text-gray-300 absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            </div>
+          </div>
+          <div className="mt-1 flex items-center gap-2 group/sub">
+            <div className="relative flex-1 max-w-xl">
+              <input
+                type="text"
+                value={projectSubtitle}
+                onChange={(e) => setProjectSubtitle(e.target.value)}
+                className="text-sm text-gray-500 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-100 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-100/50"
+                placeholder="專案描述"
+              />
+              <Edit className="w-3 h-3 text-gray-300 absolute -right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/sub:opacity-100 transition-opacity pointer-events-none" />
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
