@@ -81,11 +81,16 @@ export default function App() {
   const fileInputRef = useRef(null);
   const headerScrollRef = useRef(null);
   const bodyScrollRef = useRef(null);
+  const phantomScrollRef = useRef(null);
 
   // Sync scroll handler
-  const handleScroll = (source, target) => {
-    if (source.current && target.current) {
-      target.current.scrollLeft = source.current.scrollLeft;
+  const handleScroll = (source, targets) => {
+    if (source.current) {
+      targets.forEach(target => {
+        if (target.current && target.current.scrollLeft !== source.current.scrollLeft) {
+          target.current.scrollLeft = source.current.scrollLeft;
+        }
+      });
     }
   };
 
@@ -464,7 +469,6 @@ export default function App() {
       const canvas = await window.html2canvas(chartRef.current, {
         useCORS: true,
         scale: 2,
-        backgroundColor: '#f9fafb',
         logging: false,
         onclone: (clonedDoc) => {
           clonedDoc.querySelectorAll('.task-text-container span').forEach(el => {
@@ -507,20 +511,20 @@ export default function App() {
   const getDayName = (date) => ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-20 gap-4">
+    <div className="flex flex-col h-screen bg-[#111827] text-gray-100 font-sans" ref={chartRef}>
+      <header className="bg-[#1f2937] border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-sm z-20 gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 group">
-            <Calendar className="w-6 h-6 text-indigo-600 flex-shrink-0" />
+            <Calendar className="w-6 h-6 text-indigo-500 flex-shrink-0" />
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
                 value={projectTitle}
                 onChange={(e) => setProjectTitle(e.target.value)}
-                className="text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-200 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-100/50"
+                className="text-2xl font-bold text-gray-100 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50"
                 placeholder="專案名稱"
               />
-              <Edit className="w-4 h-4 text-gray-300 absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <Edit className="w-4 h-4 text-gray-500 absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </div>
           </div>
           <div className="mt-1 flex items-center gap-2 group/sub">
@@ -529,15 +533,15 @@ export default function App() {
                 type="text"
                 value={projectSubtitle}
                 onChange={(e) => setProjectSubtitle(e.target.value)}
-                className="text-sm text-gray-500 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-100 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-100/50"
+                className="text-sm text-gray-400 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50"
                 placeholder="專案描述"
               />
-              <Edit className="w-3 h-3 text-gray-300 absolute -right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/sub:opacity-100 transition-opacity pointer-events-none" />
+              <Edit className="w-3 h-3 text-gray-500 absolute -right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/sub:opacity-100 transition-opacity pointer-events-none" />
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-html2canvas-ignore="true">
           <input type="file" ref={fileInputRef} onChange={handleLoadProject} accept=".json" className="hidden" />
 
           <div className="flex bg-gray-100 p-1 rounded-lg">
@@ -590,26 +594,26 @@ export default function App() {
         </div>
       </header>
 
-      <div id="gantt-capture-root" ref={chartRef} className="flex-1 overflow-hidden flex flex-col relative bg-gray-50">
-        <div className="flex border-b border-gray-200 bg-white">
-          <div className="w-64 flex-shrink-0 border-r border-gray-200 p-4 font-semibold bg-gray-50 text-gray-700 flex items-center justify-between z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+      <div id="gantt-capture-root" className="flex-1 overflow-hidden flex flex-col relative bg-[#111827]">
+        <div className="flex border-b border-gray-700 bg-[#1f2937]">
+          <div className="w-64 flex-shrink-0 border-r border-gray-700 p-4 font-semibold bg-[#1a202c] text-gray-300 flex items-center justify-between z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
             <span>任務名稱</span>
             <span className="text-xs font-normal text-gray-500">進度</span>
           </div>
           <div
             ref={headerScrollRef}
-            onScroll={() => handleScroll(headerScrollRef, bodyScrollRef)}
+            onScroll={() => handleScroll(headerScrollRef, [bodyScrollRef, phantomScrollRef])}
             className="flex-1 overflow-x-auto overflow-y-hidden no-scrollbar"
           >
             <div className="flex" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px` }}>
               {dateRange.map((date, i) => {
                 const isWeekend = viewMode === 'day' && (date.getDay() === 0 || date.getDay() === 6);
                 return (
-                  <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className={`flex-shrink-0 border-r border-gray-100 flex flex-col items-center justify-center py-2 text-xs ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}>
-                    <span className={`font-medium ${isWeekend ? 'text-red-400' : 'text-gray-600'}`}>
+                  <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className={`flex-shrink-0 border-r border-gray-700 flex flex-col items-center justify-center py-2 text-xs ${isWeekend ? 'bg-gray-800/50' : 'bg-transparent'}`}>
+                    <span className={`font-medium ${isWeekend ? 'text-rose-500' : 'text-gray-300'}`}>
                       {getHeaderLabel(date)}
                     </span>
-                    <span className="text-gray-400 scale-75 transform">
+                    <span className="text-gray-500 scale-75 transform">
                       {getHeaderSubLabel(date)}
                     </span>
                   </div>
@@ -620,33 +624,33 @@ export default function App() {
         </div>
 
         <div className="flex-1 overflow-auto flex">
-          <div className="w-64 flex-shrink-0 bg-white border-r border-gray-200 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] min-h-full">
+          <div className="w-64 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] min-h-full">
             {tasks.map(task => (
-              <div key={task.id} className="h-14 border-b border-gray-100 px-4 flex items-center justify-between hover:bg-gray-50 group">
+              <div key={task.id} className="h-14 border-b border-gray-700/50 px-4 flex items-center justify-between hover:bg-gray-800/50 group">
                 <div className="flex flex-col min-w-0 pr-2 justify-center task-text-container">
-                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
-                  <span className="text-[10px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
+                  <span className="text-sm font-medium text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
+                  <span className="text-[10px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">{task.progress}%</span>
-                  <button onClick={() => handleEditTask(task)} className="text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Edit className="w-4 h-4" /></button>
-                  <button onClick={() => initiateDelete(task)} className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-1 flex-shrink-0" data-html2canvas-ignore="true">
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-400">{task.progress}%</span>
+                  <button onClick={() => handleEditTask(task)} className="text-gray-500 hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => initiateDelete(task)} className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
-            {tasks.length === 0 && <div className="p-8 text-center text-gray-400 text-sm">尚無任務</div>}
+            {tasks.length === 0 && <div className="p-8 text-center text-gray-500 text-sm">尚無任務</div>}
           </div>
 
           <div
             ref={bodyScrollRef}
-            onScroll={() => handleScroll(bodyScrollRef, headerScrollRef)}
-            className="flex-1 overflow-x-auto relative custom-scrollbar bg-white"
+            onScroll={() => handleScroll(bodyScrollRef, [headerScrollRef, phantomScrollRef])}
+            className="flex-1 overflow-x-auto relative custom-scrollbar bg-[#111827]"
           >
             <div className="relative" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
               <div className="absolute inset-0 flex pointer-events-none">
                 {dateRange.map((date, i) => {
                   return (
-                    <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className="flex-shrink-0 border-r border-gray-100 h-full bg-transparent" />
+                    <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className="flex-shrink-0 border-r border-gray-800 h-full bg-transparent" />
                   );
                 })}
               </div>
@@ -695,13 +699,22 @@ export default function App() {
             {watermarkText}
           </div>
         )}
+        <div
+          ref={phantomScrollRef}
+          onScroll={() => handleScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
+          className="h-4 overflow-x-auto overflow-y-hidden custom-scrollbar bg-[#1f2937] border-t border-gray-700"
+          style={{ marginLeft: '256px' }}
+          data-html2canvas-ignore="true"
+        >
+          <div style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: '1px' }} />
+        </div>
       </div>
 
-      <div className="bg-white border-t border-gray-200 px-6 py-3 flex gap-6 text-sm overflow-x-auto">
+      <div className="bg-[#1f2937] border-t border-gray-700 px-6 py-3 flex gap-6 text-sm overflow-x-auto" data-html2canvas-ignore="true">
         {categories.map((cat) => (
           <div key={cat.id} className="flex items-center gap-2 flex-shrink-0">
             <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></span>
-            <span className="text-gray-600">{cat.label}</span>
+            <span className="text-gray-400">{cat.label}</span>
           </div>
         ))}
       </div>
@@ -882,10 +895,10 @@ export default function App() {
         </div>
       )}
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; } 
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; } 
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; } 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        .custom-scrollbar::-webkit-scrollbar { width: 12px; height: 12px; } 
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 6px; border: 3px solid #1f2937; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
