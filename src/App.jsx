@@ -1,5 +1,5 @@
 import html2canvas from 'html2canvas';
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 // 在線上預覽環境中，我們移除 import，改用下方的 useEffect 載入 CDN
 // import html2canvas from 'html2canvas'; 
 import { Calendar, Plus, Trash2, Save, Image as ImageIcon, Loader2, Download, Upload, AlertTriangle, Edit, X, Settings, Palette, Info, Stamp } from 'lucide-react';
@@ -12,6 +12,21 @@ const DEFAULT_CATEGORIES = [
   { id: 'testing', label: '測試', color: '#f59e0b' },
   { id: 'deploy', label: '部署', color: '#64748b' },
 ];
+
+const VIEW_MODES = {
+  day: { label: '日', columnWidth: 40 },
+  week: { label: '週', columnWidth: 100 },
+  month: { label: '月', columnWidth: 120 },
+  year: { label: '年', columnWidth: 150 },
+};
+
+const getWeekNumber = (date) => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+};
 
 const INITIAL_TASKS = [
   { id: 1, name: '專案啟動與需求分析', start: '2023-11-01', end: '2023-11-05', progress: 100, category: 'planning' },
@@ -46,6 +61,7 @@ export default function App() {
   const [watermarkOpacity, setWatermarkOpacity] = useState(0.3);
   const [watermarkFontSize, setWatermarkFontSize] = useState(24);
   const [watermarkRotate, setWatermarkRotate] = useState(-30); // 新增：旋轉角度狀態
+  const [viewMode, setViewMode] = useState('day');
 
   // Project Info state
   const [projectTitle, setProjectTitle] = useState('專案甘特圖');
@@ -89,41 +105,111 @@ export default function App() {
     document.title = projectTitle;
   }, [projectTitle]);
 
-  const { minDate, maxDate, totalDays, dateRange } = useMemo(() => {
-    if (tasks.length === 0) return { minDate: new Date(), maxDate: new Date(), totalDays: 0, dateRange: [] };
+  const { minDate, maxDate, dateRange } = useMemo(() => {
+    if (tasks.length === 0) return { minDate: new Date(), maxDate: new Date(), dateRange: [] };
 
     const starts = tasks.map(t => new Date(t.start).getTime());
     const ends = tasks.map(t => new Date(t.end).getTime());
-
     let min = new Date(Math.min(...starts));
-    min.setDate(min.getDate() - 2);
-
     let max = new Date(Math.max(...ends));
-    max.setDate(max.getDate() + 5);
 
-    const diffTime = Math.abs(max - min);
-    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const normalize = (date, mode, isEnd = false) => {
+      const d = new Date(date);
+      if (mode === 'day') {
+        if (!isEnd) d.setDate(d.getDate() - 2); else d.setDate(d.getDate() + 5);
+      } else if (mode === 'week') {
+        d.setDate(d.getDate() - d.getDay());
+        if (!isEnd) d.setDate(d.getDate() - 7); else d.setDate(d.getDate() + 28);
+      } else if (mode === 'month') {
+        d.setDate(1);
+        if (!isEnd) d.setMonth(d.getMonth() - 1); else d.setMonth(d.getMonth() + 6);
+      } else if (mode === 'year') {
+        d.setMonth(0, 1);
+        if (!isEnd) d.setFullYear(d.getFullYear() - 1); else d.setFullYear(d.getFullYear() + 2);
+      }
+      return d;
+    };
+
+    min = normalize(min, viewMode);
+    max = normalize(max, viewMode, true);
 
     const range = [];
-    for (let i = 0; i <= days; i++) {
-      const d = new Date(min);
-      d.setDate(d.getDate() + i);
-      range.push(d);
+    let curr = new Date(min);
+    while (curr <= max) {
+      range.push(new Date(curr));
+      if (viewMode === 'day') curr.setDate(curr.getDate() + 1);
+      else if (viewMode === 'week') curr.setDate(curr.getDate() + 7);
+      else if (viewMode === 'month') curr.setMonth(curr.getMonth() + 1);
+      else if (viewMode === 'year') curr.setFullYear(curr.getFullYear() + 1);
+    }
+    return { minDate: min, maxDate: max, dateRange: range };
+  }, [tasks, viewMode]);
+
+  const dateToPx = useCallback((dateInput) => {
+    if (dateRange.length === 0) return 0;
+    const date = new Date(dateInput);
+    const mode = viewMode;
+    const columnWidth = VIEW_MODES[mode].columnWidth;
+
+    if (date < dateRange[0]) return 0;
+
+    let colIndex = -1;
+    for (let i = 0; i < dateRange.length; i++) {
+      const d = dateRange[i];
+      const next = i < dateRange.length - 1 ? dateRange[i + 1] : null;
+      if (date >= d && (!next || date < next)) {
+        colIndex = i;
+        break;
+      }
     }
 
-    return { minDate: min, maxDate: max, totalDays: days, dateRange: range };
-  }, [tasks]);
+    if (colIndex === -1) return dateRange.length * columnWidth;
 
-  const getTaskStyle = (task) => {
-    const startDate = new Date(task.start);
-    const endDate = new Date(task.end);
-    const startDiff = (startDate - minDate) / (1000 * 60 * 60 * 24);
-    const duration = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1;
+    const dCurr = dateRange[colIndex];
+    let dNext = new Date(dCurr);
+    if (colIndex < dateRange.length - 1) {
+      dNext = dateRange[colIndex + 1];
+    } else {
+      if (mode === 'day') dNext.setDate(dNext.getDate() + 1);
+      else if (mode === 'week') dNext.setDate(dNext.getDate() + 7);
+      else if (mode === 'month') dNext.setMonth(dNext.getMonth() + 1);
+      else if (mode === 'year') dNext.setFullYear(dNext.getFullYear() + 1);
+    }
+
+    const progress = (date - dCurr) / (dNext - dCurr);
+    return (colIndex + progress) * columnWidth;
+  }, [dateRange, viewMode]);
+
+  const getTaskStyle = useCallback((task) => {
+    const left = dateToPx(task.start);
+    const endPlusOne = new Date(task.end);
+    endPlusOne.setDate(endPlusOne.getDate() + 1);
+    const right = dateToPx(endPlusOne);
 
     return {
-      left: `${startDiff * 40}px`,
-      width: `${duration * 40}px`
+      left: `${left}px`,
+      width: `${Math.max(right - left, 5)}px`
     };
+  }, [dateToPx]);
+
+  const getHeaderLabel = (date) => {
+    if (viewMode === 'day') return formatDate(date);
+    if (viewMode === 'week') {
+      const end = new Date(date);
+      end.setDate(end.getDate() + 6);
+      return `${formatDate(date)} - ${formatDate(end)}`;
+    }
+    if (viewMode === 'month') return `${date.getFullYear()}/${date.getMonth() + 1}`;
+    if (viewMode === 'year') return `${date.getFullYear()}`;
+    return '';
+  };
+
+  const getHeaderSubLabel = (date) => {
+    if (viewMode === 'day') return getDayName(date);
+    if (viewMode === 'week') return `W${getWeekNumber(date)}`;
+    if (viewMode === 'month') return '月份';
+    if (viewMode === 'year') return '年份';
+    return '';
   };
 
   // Helper: 產生浮水印樣式物件 (更新：支援旋轉)
@@ -454,6 +540,20 @@ export default function App() {
         <div className="flex items-center gap-2">
           <input type="file" ref={fileInputRef} onChange={handleLoadProject} accept=".json" className="hidden" />
 
+          <div className="flex bg-gray-100 p-1 rounded-lg">
+            {Object.entries(VIEW_MODES).map(([mode, { label }]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === mode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-6 w-px bg-gray-300 mx-1"></div>
+
           <button onClick={() => setShowWatermarkModal(true)} className={`bg-white border hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm text-sm ${watermarkText ? 'border-indigo-300 bg-indigo-50' : 'border-gray-300'}`} title="設定匯出浮水印">
             <Stamp className={`w-4 h-4 ${watermarkText ? 'text-indigo-600' : 'text-gray-500'}`} />
             <span className="hidden sm:inline">浮水印</span>
@@ -501,16 +601,16 @@ export default function App() {
             onScroll={() => handleScroll(headerScrollRef, bodyScrollRef)}
             className="flex-1 overflow-x-auto overflow-y-hidden no-scrollbar"
           >
-            <div className="flex" style={{ width: `${dateRange.length * 40}px` }}>
+            <div className="flex" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px` }}>
               {dateRange.map((date, i) => {
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const isWeekend = viewMode === 'day' && (date.getDay() === 0 || date.getDay() === 6);
                 return (
-                  <div key={i} className={`flex-shrink-0 w-[40px] border-r border-gray-100 flex flex-col items-center justify-center py-2 text-xs ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}>
+                  <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className={`flex-shrink-0 border-r border-gray-100 flex flex-col items-center justify-center py-2 text-xs ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}>
                     <span className={`font-medium ${isWeekend ? 'text-red-400' : 'text-gray-600'}`}>
-                      {formatDate(date)}
+                      {getHeaderLabel(date)}
                     </span>
                     <span className="text-gray-400 scale-75 transform">
-                      {getDayName(date)}
+                      {getHeaderSubLabel(date)}
                     </span>
                   </div>
                 );
@@ -542,17 +642,21 @@ export default function App() {
             onScroll={() => handleScroll(bodyScrollRef, headerScrollRef)}
             className="flex-1 overflow-x-auto relative custom-scrollbar bg-white"
           >
-            <div className="relative" style={{ width: `${dateRange.length * 40}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
+            <div className="relative" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
               <div className="absolute inset-0 flex pointer-events-none">
                 {dateRange.map((date, i) => {
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                  const isToday = new Date().toDateString() === date.toDateString();
                   return (
-                    <div key={i} className={`flex-shrink-0 w-[40px] border-r border-gray-100 h-full ${isWeekend ? 'bg-gray-50/50' : ''} ${isToday ? 'bg-yellow-50/30' : ''}`}>
-                      {isToday && <div className="w-full h-full border-l-2 border-yellow-400 opacity-20"></div>}
-                    </div>
+                    <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className="flex-shrink-0 border-r border-gray-100 h-full bg-transparent" />
                   );
                 })}
+              </div>
+
+              {/* Today indicator line */}
+              <div
+                className="absolute top-0 bottom-0 border-l-2 border-red-400/50 z-20 pointer-events-none"
+                style={{ left: `${dateToPx(new Date())}px` }}
+              >
+                <div className="bg-red-400 text-[9px] text-white px-1 rounded-sm absolute top-0 -left-1 transform -translate-x-1/2 whitespace-nowrap">今天</div>
               </div>
 
               <div className="absolute top-0 left-0 w-full pt-[4px]">
