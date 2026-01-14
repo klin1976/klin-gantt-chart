@@ -702,11 +702,13 @@ export default function App() {
         <div
           ref={phantomScrollRef}
           onScroll={() => handleScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
-          className="h-4 overflow-x-auto overflow-y-hidden custom-scrollbar bg-[#1f2937] border-t border-gray-700"
-          style={{ marginLeft: '256px' }}
+          className="h-5 overflow-x-scroll overflow-y-hidden custom-scrollbar bg-[#111827] border-t border-gray-700 sticky bottom-0 z-30 flex"
           data-html2canvas-ignore="true"
         >
-          <div style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: '1px' }} />
+          <div className="w-64 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 h-full" />
+          <div className="flex-1 overflow-visible">
+            <div style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: '1px' }} />
+          </div>
         </div>
       </div>
 
@@ -896,9 +898,9 @@ export default function App() {
       )}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 12px; height: 12px; } 
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; } 
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 6px; border: 3px solid #1f2937; } 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; border-radius: 6px; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 6px; border: 2px solid #1f2937; } 
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #818cf8; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
