@@ -485,6 +485,34 @@ export default function App() {
         scale: 2,
         logging: false,
         onclone: (clonedDoc) => {
+          // 截圖時標題置中
+          const header = clonedDoc.querySelector('header');
+          if (header) {
+            header.style.display = 'flex';
+            header.style.justifyContent = 'center';
+            header.style.alignItems = 'center';
+            header.style.flexDirection = 'column';
+            header.style.textAlign = 'center';
+            header.style.padding = '20px';
+          }
+          // 修正標題輸入框樣式
+          const titleContainer = clonedDoc.querySelector('header > div:first-child');
+          if (titleContainer) {
+            titleContainer.style.display = 'flex';
+            titleContainer.style.flexDirection = 'column';
+            titleContainer.style.alignItems = 'center';
+            titleContainer.style.width = '100%';
+          }
+          // 修正副標題顯示
+          clonedDoc.querySelectorAll('input[placeholder="專案描述"]').forEach(el => {
+            el.style.lineHeight = '1.6';
+            el.style.padding = '6px 0';
+            el.style.textAlign = 'center';
+          });
+          clonedDoc.querySelectorAll('input[placeholder="專案名稱"]').forEach(el => {
+            el.style.textAlign = 'center';
+          });
+          // 現有的任務文字修正
           clonedDoc.querySelectorAll('.task-text-container span').forEach(el => {
             el.style.overflow = 'visible';
             el.style.whiteSpace = 'normal';
@@ -610,9 +638,9 @@ export default function App() {
 
       <div id="gantt-capture-root" className="flex-1 overflow-hidden flex flex-col relative bg-[#111827]">
         <div className="flex border-b border-gray-700 bg-[#1f2937]">
-          <div className="w-64 flex-shrink-0 border-r border-gray-700 p-4 font-semibold bg-[#1a202c] text-gray-300 flex items-center justify-between z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
-            <span>任務名稱</span>
-            <span className="text-xs font-normal text-gray-500">進度</span>
+          <div className="w-96 flex-shrink-0 border-r border-gray-700 p-4 font-semibold bg-[#1a202c] text-gray-300 flex items-center justify-between z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
+            <span className="text-base">任務名稱</span>
+            <span className="text-sm font-normal text-gray-500">進度</span>
           </div>
           <div
             ref={headerScrollRef}
@@ -638,21 +666,21 @@ export default function App() {
         </div>
 
         <div className="flex-1 overflow-auto flex">
-          <div className="w-64 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] min-h-full">
+          <div className="w-96 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] min-h-full">
             {tasks.map(task => (
-              <div key={task.id} className="h-14 border-b border-gray-700/50 px-4 flex items-center justify-between hover:bg-gray-800/50 group">
+              <div key={task.id} className="h-[84px] border-b border-gray-700/50 px-4 flex items-center justify-between hover:bg-gray-800/50 group">
                 <div className="flex flex-col min-w-0 pr-2 justify-center task-text-container">
-                  <span className="text-sm font-medium text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
-                  <span className="text-[10px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
+                  <span className="text-xl font-medium text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
+                  <span className="text-[15px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0" data-html2canvas-ignore="true">
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-400">{task.progress}%</span>
-                  <button onClick={() => handleEditTask(task)} className="text-gray-500 hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Edit className="w-4 h-4" /></button>
-                  <button onClick={() => initiateDelete(task)} className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 className="w-4 h-4" /></button>
+                  <span className="text-sm px-2 py-1 rounded-full bg-gray-800 text-gray-400">{task.progress}%</span>
+                  <button onClick={() => handleEditTask(task)} className="text-gray-500 hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Edit className="w-5 h-5" /></button>
+                  <button onClick={() => initiateDelete(task)} className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 className="w-5 h-5" /></button>
                 </div>
               </div>
             ))}
-            {tasks.length === 0 && <div className="p-8 text-center text-gray-500 text-sm">尚無任務</div>}
+            {tasks.length === 0 && <div className="p-8 text-center text-gray-500 text-base">尚無任務</div>}
           </div>
 
           <div
@@ -717,7 +745,7 @@ export default function App() {
           ref={phantomScrollRef}
           onScroll={() => handleScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
           className="h-5 overflow-x-scroll overflow-y-hidden custom-scrollbar bg-[#111827] border-t border-gray-700 sticky bottom-0 z-30"
-          style={{ marginLeft: '256px' }}
+          style={{ marginLeft: '384px' }}
           data-html2canvas-ignore="true"
         >
           <div style={{ width: `${totalChartWidth}px`, height: '1px' }} />
