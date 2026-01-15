@@ -14,10 +14,10 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const VIEW_MODES = {
-  day: { label: '日', columnWidth: 40 },
-  week: { label: '週', columnWidth: 100 },
-  month: { label: '月', columnWidth: 120 },
-  year: { label: '年', columnWidth: 150 },
+  day: { label: '日', columnWidth: 60 },
+  week: { label: '週', columnWidth: 150 },
+  month: { label: '月', columnWidth: 180 },
+  year: { label: '年', columnWidth: 225 },
 };
 
 const getWeekNumber = (date) => {
@@ -566,13 +566,13 @@ export default function App() {
       <header className="bg-[#1f2937] border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-sm z-20 gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 group">
-            <Calendar className="w-6 h-6 text-indigo-500 flex-shrink-0" />
+            <Calendar className="w-9 h-9 text-indigo-500 flex-shrink-0" />
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
                 value={projectTitle}
                 onChange={(e) => setProjectTitle(e.target.value)}
-                className="text-2xl font-bold text-gray-100 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50"
+                className="text-4xl font-bold text-gray-100 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50"
                 placeholder="專案名稱"
               />
               <Edit className="w-4 h-4 text-gray-500 absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -584,7 +584,7 @@ export default function App() {
                 type="text"
                 value={projectSubtitle}
                 onChange={(e) => setProjectSubtitle(e.target.value)}
-                className="text-sm text-gray-400 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50 leading-relaxed py-0.5"
+                className="text-xl text-gray-400 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50 leading-relaxed py-1"
                 placeholder="專案描述"
               />
               <Edit className="w-3 h-3 text-gray-500 absolute -right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/sub:opacity-100 transition-opacity pointer-events-none" />
@@ -660,7 +660,7 @@ export default function App() {
               {dateRange.map((date, i) => {
                 const isWeekend = viewMode === 'day' && (date.getDay() === 0 || date.getDay() === 6);
                 return (
-                  <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className={`flex-shrink-0 border-r border-gray-700 flex flex-col items-center justify-center py-2 text-xs ${isWeekend ? 'bg-gray-800/50' : 'bg-transparent'}`}>
+                  <div key={i} style={{ width: VIEW_MODES[viewMode].columnWidth }} className={`flex-shrink-0 border-r border-gray-700 flex flex-col items-center justify-center py-3 text-sm ${isWeekend ? 'bg-gray-800/50' : 'bg-transparent'}`}>
                     <span className={`font-medium ${isWeekend ? 'text-rose-500' : 'text-gray-300'}`}>
                       {getHeaderLabel(date)}
                     </span>
@@ -697,7 +697,7 @@ export default function App() {
             onScroll={() => handleScroll(bodyScrollRef, [headerScrollRef, phantomScrollRef])}
             className="flex-1 overflow-x-auto relative custom-scrollbar bg-[#111827]"
           >
-            <div className="relative" style={{ width: `${totalChartWidth}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
+            <div className="relative" style={{ width: `${totalChartWidth}px`, height: `${Math.max(tasks.length * 84, 300)}px` }}>
               <div className="absolute inset-0 flex pointer-events-none">
                 {dateRange.map((date, i) => {
                   return (
@@ -720,9 +720,9 @@ export default function App() {
                   const categoryInfo = getCategoryInfo(task.category);
 
                   return (
-                    <div key={task.id} className="h-14 relative flex items-center" style={{ top: `${index * 0}px` }}>
+                    <div key={task.id} className="h-[84px] relative flex items-center" style={{ top: `${index * 0}px` }}>
                       <div
-                        className="absolute h-8 rounded-md shadow-sm border border-white/20 overflow-hidden cursor-pointer hover:brightness-110 transition-all group"
+                        className="absolute h-12 rounded-md shadow-sm border border-white/20 overflow-hidden cursor-pointer hover:brightness-110 transition-all group"
                         style={{
                           left: style.left,
                           width: style.width,
@@ -732,7 +732,7 @@ export default function App() {
                       >
                         <div className="h-full bg-white/30" style={{ width: `${task.progress}%` }} />
                         <div className="absolute inset-0 flex items-center px-2">
-                          <span className="text-[10px] text-white font-medium whitespace-nowrap drop-shadow-md truncate w-full bar-text-content">
+                          <span className="text-[15px] text-white font-medium whitespace-nowrap drop-shadow-md truncate w-full bar-text-content">
                             {task.name} ({task.progress}%)
                           </span>
                         </div>
