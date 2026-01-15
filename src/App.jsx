@@ -150,6 +150,20 @@ export default function App() {
     return { minDate: min, maxDate: max, dateRange: range };
   }, [tasks, viewMode]);
 
+  // Calculate total chart width with minimum guarantee and auto-fill for year view
+  const totalChartWidth = useMemo(() => {
+    const baseWidth = dateRange.length * VIEW_MODES[viewMode].columnWidth;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth - 256 : 1000;
+    const minWidth = viewportWidth * 1.5;
+
+    // For year view with few years, auto-expand to fill screen
+    if (viewMode === 'year' && dateRange.length > 0 && dateRange.length <= 5) {
+      return Math.max(baseWidth, viewportWidth);
+    }
+
+    return Math.max(baseWidth, minWidth);
+  }, [dateRange, viewMode]);
+
   const dateToPx = useCallback((dateInput) => {
     if (dateRange.length === 0) return 0;
     const date = new Date(dateInput);
@@ -605,7 +619,7 @@ export default function App() {
             onScroll={() => handleScroll(headerScrollRef, [bodyScrollRef, phantomScrollRef])}
             className="flex-1 overflow-x-auto overflow-y-hidden no-scrollbar"
           >
-            <div className="flex" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px` }}>
+            <div className="flex" style={{ width: `${totalChartWidth}px` }}>
               {dateRange.map((date, i) => {
                 const isWeekend = viewMode === 'day' && (date.getDay() === 0 || date.getDay() === 6);
                 return (
@@ -646,7 +660,7 @@ export default function App() {
             onScroll={() => handleScroll(bodyScrollRef, [headerScrollRef, phantomScrollRef])}
             className="flex-1 overflow-x-auto relative custom-scrollbar bg-[#111827]"
           >
-            <div className="relative" style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
+            <div className="relative" style={{ width: `${totalChartWidth}px`, height: `${Math.max(tasks.length * 56, 300)}px` }}>
               <div className="absolute inset-0 flex pointer-events-none">
                 {dateRange.map((date, i) => {
                   return (
@@ -702,13 +716,11 @@ export default function App() {
         <div
           ref={phantomScrollRef}
           onScroll={() => handleScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
-          className="h-5 overflow-x-scroll overflow-y-hidden custom-scrollbar bg-[#111827] border-t border-gray-700 sticky bottom-0 z-30 flex"
+          className="h-5 overflow-x-scroll overflow-y-hidden custom-scrollbar bg-[#111827] border-t border-gray-700 sticky bottom-0 z-30"
+          style={{ marginLeft: '256px' }}
           data-html2canvas-ignore="true"
         >
-          <div className="w-64 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 h-full" />
-          <div className="flex-1 overflow-visible">
-            <div style={{ width: `${dateRange.length * VIEW_MODES[viewMode].columnWidth}px`, height: '1px' }} />
-          </div>
+          <div style={{ width: `${totalChartWidth}px`, height: '1px' }} />
         </div>
       </div>
 
