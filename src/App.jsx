@@ -485,50 +485,79 @@ export default function App() {
         scale: 2,
         logging: false,
         onclone: (clonedDoc) => {
-          // 截圖時標題置中
+          // 1. 調整 Header 容器
           const header = clonedDoc.querySelector('header');
           if (header) {
             header.style.display = 'flex';
-            header.style.justifyContent = 'center';
-            header.style.alignItems = 'center';
             header.style.flexDirection = 'column';
-            header.style.textAlign = 'center';
-            header.style.padding = '60px 20px 30px 20px';
-            header.style.overflow = 'visible';
+            header.style.alignItems = 'center';
+            header.style.justifyContent = 'center';
+            header.style.padding = '60px 20px 30px 20px'; // 保持充裕空間
+            header.style.height = 'auto';
+            header.style.gap = '12px';
           }
-          // 隱藏 Calendar 圖案
-          clonedDoc.querySelectorAll('header svg').forEach(el => {
-            el.style.display = 'none';
-          });
-          // 修正標題輸入框樣式
-          const titleContainer = clonedDoc.querySelector('header > div:first-child');
-          if (titleContainer) {
-            titleContainer.style.display = 'flex';
-            titleContainer.style.flexDirection = 'column';
-            titleContainer.style.alignItems = 'center';
-            titleContainer.style.width = '100%';
-            titleContainer.style.overflow = 'visible';
-            titleContainer.style.marginTop = '20px';
+
+          // 2. 隱藏不必要的 SVG (Calendar, Edit等)
+          clonedDoc.querySelectorAll('header svg').forEach(el => el.style.display = 'none');
+
+          // 3. 處理標題 Input -> 轉為純文字 Div 以避免截斷
+          const titleInput = clonedDoc.querySelector('input[placeholder="專案名稱"]');
+          if (titleInput) {
+            const titleDiv = clonedDoc.createElement('div');
+            titleDiv.textContent = titleInput.value || '專案名稱';
+            titleDiv.style.fontSize = '36px'; // text-4xl
+            titleDiv.style.fontWeight = 'bold';
+            titleDiv.style.color = '#f3f4f6'; // text-gray-100
+            titleDiv.style.textAlign = 'center';
+            titleDiv.style.lineHeight = '1.5';
+            titleDiv.style.padding = '10px 0';
+            titleDiv.style.overflow = 'visible';
+            titleDiv.style.whiteSpace = 'normal';
+
+            if (titleInput.parentNode) {
+              titleInput.parentNode.parentNode.replaceChild(titleDiv, titleInput.parentNode);
+              // 注意：原結構是 input -> div.relative -> div.flex -> header
+              // 我們直接把整個 div.relative (輸入框容器) 替換掉，或者替換 input
+              // 為了排版簡單，我們找到 titleInput 的父層 div (relative)，將其替換為 titleDiv
+              // 但原本結構還有 Calendar icon 的父層 div (flex items-center gap-2 group)
+
+              // 修正策略：直接取代 header 的第一個子 div (包含標題的區塊)
+            }
           }
-          // 修正標題顯示 - 確保完整顯示
-          clonedDoc.querySelectorAll('input[placeholder="專案名稱"]').forEach(el => {
-            el.style.textAlign = 'center';
-            el.style.overflow = 'visible';
-            el.style.height = 'auto';
-            el.style.lineHeight = '1.8';
-            el.style.paddingTop = '20px';
-            el.style.paddingBottom = '10px';
-            el.style.marginTop = '10px';
-          });
-          // 修正副標題顯示 - 確保完整顯示
-          clonedDoc.querySelectorAll('input[placeholder="專案描述"]').forEach(el => {
-            el.style.lineHeight = '2';
-            el.style.padding = '10px 0';
-            el.style.textAlign = 'center';
-            el.style.overflow = 'visible';
-            el.style.height = 'auto';
-            el.style.minHeight = '36px';
-          });
+
+          // 重寫標題替換邏輯，更穩健地操作 DOM
+          const headerTitleSection = clonedDoc.querySelector('header > div:first-child');
+          if (headerTitleSection) {
+            // 清空原本內容，重建為標題+副標題結構
+            const currentTitle = clonedDoc.querySelector('input[placeholder="專案名稱"]')?.value;
+            const currentSubtitle = clonedDoc.querySelector('input[placeholder="專案描述"]')?.value;
+
+            headerTitleSection.innerHTML = '';
+            headerTitleSection.style.display = 'flex';
+            headerTitleSection.style.flexDirection = 'column';
+            headerTitleSection.style.alignItems = 'center';
+            headerTitleSection.style.width = '100%';
+
+            // 建立標題 Div
+            const newTitle = clonedDoc.createElement('div');
+            newTitle.textContent = currentTitle;
+            newTitle.style.fontSize = '42px'; // 加大字體以確保清晰
+            newTitle.style.fontWeight = 'bold';
+            newTitle.style.color = '#fff';
+            newTitle.style.textAlign = 'center';
+            newTitle.style.lineHeight = '1.4';
+            newTitle.style.marginBottom = '8px';
+            headerTitleSection.appendChild(newTitle);
+
+            // 建立副標題 Div
+            const newSubtitle = clonedDoc.createElement('div');
+            newSubtitle.textContent = currentSubtitle;
+            newSubtitle.style.fontSize = '24px'; // text-xl
+            newSubtitle.style.color = '#9ca3af'; // text-gray-400
+            newSubtitle.style.textAlign = 'center';
+            newSubtitle.style.lineHeight = '1.5';
+            headerTitleSection.appendChild(newSubtitle);
+          }
           // 現有的任務文字修正
           clonedDoc.querySelectorAll('.task-text-container span').forEach(el => {
             el.style.overflow = 'visible';
