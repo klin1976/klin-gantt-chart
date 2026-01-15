@@ -493,7 +493,7 @@ export default function App() {
             header.style.alignItems = 'center';
             header.style.flexDirection = 'column';
             header.style.textAlign = 'center';
-            header.style.padding = '24px 20px';
+            header.style.padding = '40px 20px 24px 20px';
           }
           // 隱藏 Calendar 圖案
           clonedDoc.querySelectorAll('header svg').forEach(el => {
@@ -507,6 +507,15 @@ export default function App() {
             titleContainer.style.alignItems = 'center';
             titleContainer.style.width = '100%';
           }
+          // 修正標題顯示 - 確保完整顯示
+          clonedDoc.querySelectorAll('input[placeholder="專案名稱"]').forEach(el => {
+            el.style.textAlign = 'center';
+            el.style.overflow = 'visible';
+            el.style.height = 'auto';
+            el.style.lineHeight = '1.5';
+            el.style.paddingTop = '12px';
+            el.style.paddingBottom = '8px';
+          });
           // 修正副標題顯示 - 確保完整顯示
           clonedDoc.querySelectorAll('input[placeholder="專案描述"]').forEach(el => {
             el.style.lineHeight = '2';
@@ -515,11 +524,6 @@ export default function App() {
             el.style.overflow = 'visible';
             el.style.height = 'auto';
             el.style.minHeight = '32px';
-          });
-          clonedDoc.querySelectorAll('input[placeholder="專案名稱"]').forEach(el => {
-            el.style.textAlign = 'center';
-            el.style.overflow = 'visible';
-            el.style.height = 'auto';
           });
           // 現有的任務文字修正
           clonedDoc.querySelectorAll('.task-text-container span').forEach(el => {
