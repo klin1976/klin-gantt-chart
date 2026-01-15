@@ -547,7 +547,7 @@ export default function App() {
                 type="text"
                 value={projectSubtitle}
                 onChange={(e) => setProjectSubtitle(e.target.value)}
-                className="text-sm text-gray-400 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50"
+                className="text-sm text-gray-400 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-900 rounded px-1 -ml-1 w-full transition-all hover:bg-gray-800/50 leading-relaxed py-0.5"
                 placeholder="專案描述"
               />
               <Edit className="w-3 h-3 text-gray-500 absolute -right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/sub:opacity-100 transition-opacity pointer-events-none" />
