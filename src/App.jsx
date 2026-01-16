@@ -2,7 +2,7 @@ import html2canvas from 'html2canvas';
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 // 在線上預覽環境中，我們移除 import，改用下方的 useEffect 載入 CDN
 // import html2canvas from 'html2canvas'; 
-import { Calendar, Plus, Trash2, Save, Image as ImageIcon, Loader2, Download, Upload, AlertTriangle, Edit, X, Settings, Palette, Info, Stamp } from 'lucide-react';
+import { Calendar, Plus, Trash2, Save, Image as ImageIcon, Loader2, Download, Upload, AlertTriangle, Edit, X, Settings, Palette, Info, Stamp, GripVertical } from 'lucide-react';
 
 // 預設類別資料
 const DEFAULT_CATEGORIES = [
@@ -82,6 +82,20 @@ export default function App() {
   const headerScrollRef = useRef(null);
   const bodyScrollRef = useRef(null);
   const phantomScrollRef = useRef(null);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+
+  // 拖拽事件處理
+  const handleDragStart = (index) => setDraggedIndex(index);
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    const newTasks = [...tasks];
+    const [removed] = newTasks.splice(draggedIndex, 1);
+    newTasks.splice(index, 0, removed);
+    setTasks(newTasks);
+    setDraggedIndex(index);
+  };
+  const handleDragEnd = () => setDraggedIndex(null);
 
   // Sync scroll handler
   const handleScroll = (source, targets) => {
@@ -713,11 +727,21 @@ export default function App() {
 
         <div className="flex-1 overflow-auto flex">
           <div className="w-96 flex-shrink-0 bg-[#1a202c] border-r border-gray-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] min-h-full">
-            {tasks.map(task => (
-              <div key={task.id} className="h-[84px] border-b border-gray-700/50 px-4 flex items-center justify-between hover:bg-gray-800/50 group">
-                <div className="flex flex-col min-w-0 pr-2 justify-center task-text-container">
-                  <span className="text-xl font-medium text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
-                  <span className="text-[15px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
+            {tasks.map((task, index) => (
+              <div
+                key={task.id}
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`h-[84px] border-b border-gray-700/50 px-4 flex items-center justify-between hover:bg-gray-800/50 group cursor-grab active:cursor-grabbing ${draggedIndex === index ? 'opacity-50 bg-indigo-900/30' : ''}`}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <GripVertical className="w-5 h-5 text-gray-600 flex-shrink-0 group-hover:text-gray-400 transition-colors" />
+                  <div className="flex flex-col min-w-0 pr-2 justify-center task-text-container">
+                    <span className="text-xl font-medium text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed py-0.5 block" title={task.name}>{task.name}</span>
+                    <span className="text-[15px] text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis leading-normal block">{task.start} ~ {task.end}</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0" data-html2canvas-ignore="true">
                   <span className="text-sm px-2 py-1 rounded-full bg-gray-800 text-gray-400">{task.progress}%</span>
