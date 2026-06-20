@@ -1,5 +1,45 @@
 # Klin Gantt Chart - Antigravity 專案設定
 
+## 專案工作模式（#07 固定入口）
+
+**專案名稱：** klin-gantt-chart  
+**專案用途：** React 甘特圖 web app，支援 Firebase 同步與 Drag-and-Drop  
+**主要工作目錄：** `j:\我的雲端硬碟\Antigravity\klin-gantt-chart`  
+**預設 branch：** main（依目前 Git worktree 為準，不自動切換 branch）
+
+### Obsidian 對應筆記
+
+**Obsidian vault：** `j:\我的雲端硬碟\secondbrain\secondbrain`  
+**專案駕駛艙：** `klin-gantt-chart/專案工作流程.md`  
+**收工時優先更新：** 同上。
+
+### 同步規則
+
+**開工時：** 使用 `startup-sync`（此專案目前以手動讀取為主），讀本檔與 Obsidian 駕駛艙，檢查 Git，不自動 pull / commit / push。  
+**收工時：** 使用 `shutdown-sync`（此專案目前以手動更新為主），更新 Obsidian 駕駛艙，必要時更新固定規則。  
+**新專案初始化時：** 舊專案不重跑初始化，只補缺。
+
+### 不要做
+
+- 不要把每日進度寫進 AGENTS.md。
+- 不要建立第二份 canonical API spec。
+- 不要自動納入無關 Git 變更。
+- 不要寫入 secrets 或正式資料。
+
+---
+
+## API 規格維護規則
+
+本專案無傳統 REST API 接口，僅使用 Firebase Firestore 雲端同步。
+Firestore 儲存結構規格定義如下：
+- **Collection**: `users`
+- **Document ID**: `{userId}`
+- **Field**: `ganttData` (包含任務列表、依賴關係及配置的 JSON 結構)
+
+若 Firestore 資料表結構、Collection 或欄位改變，必須同步更新 `AGENTS.md` 中的規格定義。
+
+---
+
 ## 專案核心架構與約束
 
 1. **核心技術棧**：React (v19) + Vite + Tailwind CSS。
