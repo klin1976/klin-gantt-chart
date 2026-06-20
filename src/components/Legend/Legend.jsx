@@ -1,6 +1,13 @@
 import React from 'react';
+import useGanttStore from '../../store/useGanttStore';
 
-export default function Legend({ categories }) {
+/**
+ * Displays the color legend for the categories at the bottom of the screen.
+ * 
+ * @returns {React.ReactElement} The Legend component.
+ */
+export default function Legend() {
+  const { categories } = useGanttStore();
   return (
     <div className="bg-[#1f2937] border-t border-gray-700 px-6 py-3 flex gap-6 text-sm overflow-x-auto" data-html2canvas-ignore="true">
       {categories.map((cat) => (

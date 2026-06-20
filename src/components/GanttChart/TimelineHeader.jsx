@@ -1,6 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { VIEW_MODES } from '../../constants';
-// 修正：我們把 getHeaderLabel 與 getHeaderSubLabel 作為傳入參數或在元件內定義
+
+/**
+ * Renders the header of the Gantt chart timeline with dates and days/weeks.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Array<Date>} props.dateRange - Array of Date objects representing the timeline range.
+ * @param {string} props.viewMode - Current view mode ('day', 'week', 'month', 'year').
+ * @param {number} props.totalChartWidth - Total width of the timeline in pixels.
+ * @param {React.MutableRefObject} props.headerScrollRef - Ref for the header container to sync scrolling.
+ * @param {Function} props.onScroll - Scroll event handler.
+ * @returns {React.ReactElement} The TimelineHeader component.
+ */
 export default function TimelineHeader({ dateRange, viewMode, totalChartWidth, headerScrollRef, onScroll }) {
   // 原 getHeaderLabel
   const getLabel = (date) => {
@@ -70,3 +82,11 @@ export default function TimelineHeader({ dateRange, viewMode, totalChartWidth, h
     </div>
   );
 }
+
+TimelineHeader.propTypes = {
+  dateRange: PropTypes.arrayOf(PropTypes.instanceOf(Date)).isRequired,
+  viewMode: PropTypes.oneOf(['day', 'week', 'month', 'year']).isRequired,
+  totalChartWidth: PropTypes.number.isRequired,
+  headerScrollRef: PropTypes.shape({ current: PropTypes.any }),
+  onScroll: PropTypes.func.isRequired
+};

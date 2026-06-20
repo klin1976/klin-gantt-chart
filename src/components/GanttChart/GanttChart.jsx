@@ -1,32 +1,55 @@
-import React from 'react';
+import React, { useRef, useMemo } from 'react';
 import TimelineHeader from './TimelineHeader';
 import TaskList from './TaskList';
 import TaskBar from './TaskBar';
 import TodayIndicator from './TodayIndicator';
 import { VIEW_MODES } from '../../constants';
+import useGanttStore from '../../store/useGanttStore';
+import useGanttData from '../../hooks/useGanttData';
+import useSyncScroll from '../../hooks/useSyncScroll';
+import { calculateCriticalPath } from '../../utils/cpm';
+import { getWatermarkStyle } from '../../utils/styleUtils';
 
-export default function GanttChart({
-  tasks,
-  draggedIndex,
-  viewMode,
-  dateRange,
-  totalChartWidth,
-  dateToPx,
-  getTaskStyle,
-  getCategoryInfo,
-  headerScrollRef,
-  bodyScrollRef,
-  phantomScrollRef,
-  onScroll,
-  onDragStart,
-  onDragOver,
-  onDragEnd,
-  onEditTask,
-  onDeleteTask,
-  watermarkText,
-  watermarkStyle,
-  criticalTaskIds = []
-}) {
+/**
+ * The main component for displaying the Gantt chart, including the task list, timeline header, and task bars.
+ * It connects to the Zustand store for data and uses custom hooks for business logic and scroll synchronization.
+ * 
+ * @returns {React.ReactElement} The GanttChart component.
+ */
+export default function GanttChart() {
+  const {
+    tasks,
+    viewMode,
+    watermarkConfig,
+    categories,
+  } = useGanttStore();
+
+  const headerScrollRef = useRef(null);
+  const bodyScrollRef = useRef(null);
+  const phantomScrollRef = useRef(null);
+
+  const handleScroll = useSyncScroll();
+
+  const { dateRange, totalChartWidth, dateToPx, getTaskStyle } = useGanttData(tasks, viewMode);
+
+  const { criticalTaskIds } = useMemo(() => {
+    return calculateCriticalPath(tasks);
+  }, [tasks]);
+
+  const getCategoryInfo = (categoryId) => {
+    const cat = categories.find(c => c.id === categoryId);
+    return cat || { label: '未分類', color: '#94a3b8' };
+  };
+
+  const watermarkStyle = getWatermarkStyle(
+    watermarkConfig.text,
+    watermarkConfig.pos,
+    watermarkConfig.color,
+    watermarkConfig.opacity,
+    watermarkConfig.fontSize,
+    watermarkConfig.rotate
+  );
+
   return (
     <div id="gantt-capture-root" className="flex-1 overflow-hidden flex flex-col relative bg-[#111827]">
       <TimelineHeader
@@ -34,24 +57,18 @@ export default function GanttChart({
         viewMode={viewMode}
         totalChartWidth={totalChartWidth}
         headerScrollRef={headerScrollRef}
-        onScroll={() => onScroll(headerScrollRef, [bodyScrollRef, phantomScrollRef])}
+        onScroll={() => handleScroll(headerScrollRef, [bodyScrollRef, phantomScrollRef])}
       />
 
       <div className="flex-1 overflow-auto flex">
         <TaskList
           tasks={tasks}
-          draggedIndex={draggedIndex}
-          onDragStart={onDragStart}
-          onDragOver={onDragOver}
-          onDragEnd={onDragEnd}
-          onEditTask={onEditTask}
-          onDeleteTask={onDeleteTask}
           criticalTaskIds={criticalTaskIds}
         />
 
         <div
           ref={bodyScrollRef}
-          onScroll={() => onScroll(bodyScrollRef, [headerScrollRef, phantomScrollRef])}
+          onScroll={() => handleScroll(bodyScrollRef, [headerScrollRef, phantomScrollRef])}
           className="flex-1 overflow-x-auto relative custom-scrollbar bg-[#111827]"
         >
           <div className="relative" style={{ width: `${totalChartWidth}px`, height: `${Math.max(tasks.length * 84, 300)}px` }}>
@@ -165,15 +182,15 @@ export default function GanttChart({
         </div>
       </div>
 
-      {watermarkText.trim() && (
+      {watermarkConfig.text.trim() && (
         <div style={watermarkStyle}>
-          {watermarkText}
+          {watermarkConfig.text}
         </div>
       )}
 
       <div
         ref={phantomScrollRef}
-        onScroll={() => onScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
+        onScroll={() => handleScroll(phantomScrollRef, [bodyScrollRef, headerScrollRef])}
         className="h-5 overflow-x-scroll overflow-y-hidden custom-scrollbar bg-[#111827] border-t border-gray-700 sticky bottom-0 z-30"
         style={{ marginLeft: '384px' }}
         data-html2canvas-ignore="true"

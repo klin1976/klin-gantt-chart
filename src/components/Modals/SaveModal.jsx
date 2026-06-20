@@ -1,12 +1,33 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Save, Image as ImageIcon, Info, Download } from 'lucide-react';
+import useGanttStore from '../../store/useGanttStore';
 
-export default function SaveModal({ isOpen, saveMode, saveFileName, setSaveFileName, onClose, onSubmit }) {
+/**
+ * Modal component for saving the project data or exporting as an image.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onSubmit - The function to call when confirming the save/export.
+ * @returns {React.ReactElement|null} The SaveModal component or null if not open.
+ */
+export default function SaveModal({ onSubmit }) {
+  const {
+    modals,
+    saveMode,
+    saveFileName,
+    setSaveFileName,
+    setModalOpen
+  } = useGanttStore();
+
+  const isOpen = modals.save;
+
   if (!isOpen) return null;
 
+  const onClose = () => setModalOpen('save', false);
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-[90%]">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-[90%] animate-in zoom-in duration-200">
         <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
           {saveMode === 'project' ? <Save className="w-5 h-5 text-indigo-600" /> : <ImageIcon className="w-5 h-5 text-indigo-600" />}
           {saveMode === 'project' ? '儲存專案' : '匯出圖片'}
@@ -46,3 +67,7 @@ export default function SaveModal({ isOpen, saveMode, saveFileName, setSaveFileN
     </div>
   );
 }
+
+SaveModal.propTypes = {
+  onSubmit: PropTypes.func.isRequired
+};

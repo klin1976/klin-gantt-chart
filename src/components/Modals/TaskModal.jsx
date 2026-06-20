@@ -1,12 +1,34 @@
 import React from 'react';
 import { Save } from 'lucide-react';
+import useGanttStore from '../../store/useGanttStore';
 
-export default function TaskModal({ isOpen, editingId, newTask, setNewTask, categories, tasks = [], onClose, onSubmit }) {
+/**
+ * Modal component for adding or editing a task.
+ * Allows setting task name, dates, progress, category, milestone status, and dependencies.
+ * 
+ * @returns {React.ReactElement|null} The TaskModal component or null if not open.
+ */
+export default function TaskModal() {
+  const {
+    modals,
+    editingId,
+    newTask,
+    setNewTask,
+    categories,
+    tasks,
+    setModalOpen,
+    handleSaveTask
+  } = useGanttStore();
+
+  const isOpen = modals.add;
+
   if (!isOpen) return null;
 
+  const onClose = () => setModalOpen('add', false);
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-[450px] animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-[450px] animate-in zoom-in duration-200">
         <h2 className="text-xl font-bold mb-4 text-gray-800">{editingId ? '編輯任務' : '新增任務'}</h2>
         <div className="space-y-4">
           <div>
@@ -14,7 +36,7 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
             <input
               type="text"
               value={newTask.name}
-              onChange={e => setNewTask({ ...newTask, name: e.target.value })}
+              onChange={e => setNewTask({ name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
             />
           </div>
@@ -27,7 +49,6 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
               onChange={e => {
                 const checked = e.target.checked;
                 setNewTask({
-                  ...newTask,
                   milestone: checked,
                   end: checked ? newTask.start : newTask.end
                 });
@@ -50,7 +71,6 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
                 onChange={e => {
                   const val = e.target.value;
                   setNewTask({
-                    ...newTask,
                     start: val,
                     end: newTask.milestone ? val : newTask.end
                   });
@@ -64,7 +84,7 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
                 <input
                   type="date"
                   value={newTask.end}
-                  onChange={e => setNewTask({ ...newTask, end: e.target.value })}
+                  onChange={e => setNewTask({ end: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                 />
               </div>
@@ -75,7 +95,7 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
               <label className="block text-sm font-medium text-gray-700 mb-1">類別</label>
               <select
                 value={newTask.category}
-                onChange={e => setNewTask({ ...newTask, category: e.target.value })}
+                onChange={e => setNewTask({ category: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               >
                 {categories.map(cat => (
@@ -91,7 +111,7 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
                 max="100"
                 disabled={newTask.milestone}
                 value={newTask.milestone ? 100 : newTask.progress}
-                onChange={e => setNewTask({ ...newTask, progress: e.target.value })}
+                onChange={e => setNewTask({ progress: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500"
               />
             </div>
@@ -112,9 +132,9 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
                         onChange={e => {
                           const currentDeps = newTask.dependencies || [];
                           if (e.target.checked) {
-                            setNewTask({ ...newTask, dependencies: [...currentDeps, t.id] });
+                            setNewTask({ dependencies: [...currentDeps, t.id] });
                           } else {
-                            setNewTask({ ...newTask, dependencies: currentDeps.filter(id => id !== t.id) });
+                            setNewTask({ dependencies: currentDeps.filter(id => id !== t.id) });
                           }
                         }}
                         className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
@@ -131,7 +151,7 @@ export default function TaskModal({ isOpen, editingId, newTask, setNewTask, cate
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">取消</button>
-          <button onClick={onSubmit} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2">
+          <button onClick={handleSaveTask} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2">
             <Save className="w-4 h-4" />儲存
           </button>
         </div>

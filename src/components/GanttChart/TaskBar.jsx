@@ -1,3 +1,17 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+/**
+ * Renders a single task bar or milestone indicator on the Gantt chart timeline.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object} props.task - The task object containing details like name, progress, and milestone status.
+ * @param {number} props.index - The index of the task in the list.
+ * @param {Object} props.style - The inline style object for positioning the task bar.
+ * @param {Object} props.categoryInfo - The category object containing color and label information.
+ * @param {boolean} props.isCritical - Whether the task is on the critical path.
+ * @returns {React.ReactElement} The TaskBar component.
+ */
 export default function TaskBar({ task, index, style, categoryInfo, isCritical }) {
   const isMilestone = task.milestone;
 

@@ -1,5 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
+/**
+ * Renders a vertical line indicating today's date on the Gantt chart timeline.
+ * 
+ * @param {Object} props - The component props.
+ * @param {number} props.positionPx - The horizontal position in pixels.
+ * @returns {React.ReactElement} The TodayIndicator component.
+ */
 export default function TodayIndicator({ positionPx }) {
   return (
     <div
@@ -12,3 +20,7 @@ export default function TodayIndicator({ positionPx }) {
     </div>
   );
 }
+
+TodayIndicator.propTypes = {
+  positionPx: PropTypes.number.isRequired
+};

@@ -1,12 +1,41 @@
 import React from 'react';
 import { X, Palette, Trash2, Plus } from 'lucide-react';
+import useGanttStore from '../../store/useGanttStore';
 
-export default function CategoryModal({ isOpen, categories, newCategory, setNewCategory, onAddCategory, onDeleteCategory, onChangeColor, onChangeLabel, onClose }) {
+/**
+ * Modal component for managing project categories (colors and labels).
+ * 
+ * @returns {React.ReactElement|null} The CategoryModal component or null if not open.
+ */
+export default function CategoryModal() {
+  const {
+    modals,
+    categories,
+    newCategory,
+    setNewCategory,
+    handleAddCategory,
+    handleDeleteCategory,
+    setCategories,
+    setModalOpen
+  } = useGanttStore();
+
+  const isOpen = modals.category;
+
   if (!isOpen) return null;
 
+  const onClose = () => setModalOpen('category', false);
+
+  const onChangeColor = (id, color) => {
+    setCategories(categories.map(c => c.id === id ? { ...c, color } : c));
+  };
+
+  const onChangeLabel = (id, label) => {
+    setCategories(categories.map(c => c.id === id ? { ...c, label } : c));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in zoom-in duration-200">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] max-w-[90%]">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] max-w-[90%] animate-in zoom-in duration-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Palette className="w-5 h-5" /> 類別管理</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -26,7 +55,7 @@ export default function CategoryModal({ isOpen, categories, newCategory, setNewC
                 onChange={(e) => onChangeLabel(cat.id, e.target.value)}
                 className="flex-1 bg-transparent border-b border-transparent focus:border-indigo-300 outline-none px-1 text-gray-900"
               />
-              <button onClick={() => onDeleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 p-1">
+              <button onClick={() => handleDeleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 p-1">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -38,18 +67,18 @@ export default function CategoryModal({ isOpen, categories, newCategory, setNewC
             <input
               type="color"
               value={newCategory.color}
-              onChange={e => setNewCategory({ ...newCategory, color: e.target.value })}
+              onChange={e => setNewCategory({ color: e.target.value })}
               className="w-10 h-10 rounded cursor-pointer border border-gray-200 p-1"
             />
             <input
               type="text"
               placeholder="類別名稱 (如: 行銷)"
               value={newCategory.label}
-              onChange={e => setNewCategory({ ...newCategory, label: e.target.value })}
+              onChange={e => setNewCategory({ label: e.target.value })}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-900"
             />
             <button
-              onClick={onAddCategory}
+              onClick={handleAddCategory}
               disabled={!newCategory.label}
               className="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
