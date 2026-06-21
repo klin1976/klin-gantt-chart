@@ -155,3 +155,22 @@
 
 ## [2026-06-21T16:29:30+08:00] AI 回應
 好的，在您關閉專案前，我已將本次的對話紀錄更新至 `ConversationRecord.txt` 與 `ConversationRecord.md`。所有的程式碼變更（包含修正 package-lock.json）皆已在本地 Git 完成 commit。請在收工後使用本地終端機執行 `git push` 推送至 GitHub 以使 CI/CD 工作流重新運作成功。祝您使用愉快！
+
+---
+
+## [2026-06-21T16:53:36+08:00] 用戶提問
+Firebase 憑證保護：Firebase Config 包含 Placeholder。正式部署時需透過環境變數或安全機制注入配置，避免暴露於 Git。幫我確認這問題是否已經處理。
+協助我設定Firebase 專案的實際憑證（API Key、Project ID 等），請給我詳細的設定步驟。
+提供憑證資訊並要求收工推送至 GitHub。
+
+---
+
+## [2026-06-21T17:38:12+08:00] AI 回應
+- **分析與確認**：經檢查確認 [firebase.js](file:///j:/%E6%88%91%E7%9A%84%E9%9B%B2%E7%AB%AF%E7%A1%AC%E7%A2%9F/Antigravity/klin-gantt-chart/src/services/firebase.js) 之前仍在使用 Placeholder，問題尚未解決。
+- **引導與設定**：向用戶提供詳細的 Firebase 專案建立與 Web App 設定步驟，並引導完成 Firebase Authentication 已授權網域之設定以支援 GitHub Pages 登入。
+- **憑證保護實作**：
+  1. 建立本地環境變數檔案 `.env.local` 存放真實憑證，並更新 `.gitignore` 確保該檔案不會被 Git 追蹤，防止敏感資訊外洩。
+  2. 建立 `.env.example` 檔案作為憑證範本供其他協作者參考。
+  3. 修改 `src/services/firebase.js` 的設定區塊，使其能動態從 Vite 的環境變數中讀取配置 (`import.meta.env`)。
+  4. 修改 `.github/workflows/deploy.yml` 部署流程，在編譯打包時自動從 GitHub Secrets 注入環境變數。
+- **驗證與收工**：本地 `npm run build` 打包驗證無誤。最後自動更新專案對話紀錄，並將變更的程式碼與工作流設定推送至 GitHub。
