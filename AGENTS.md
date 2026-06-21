@@ -4,12 +4,12 @@
 
 **專案名稱：** klin-gantt-chart  
 **專案用途：** React 甘特圖 web app，支援 Firebase 同步與 Drag-and-Drop  
-**主要工作目錄：** `j:\我的雲端硬碟\Antigravity\klin-gantt-chart`  
+**主要工作目錄：** 專案根目錄（相對於實際掛載路徑）  
 **預設 branch：** main（依目前 Git worktree 為準，不自動切換 branch）
 
 ### Obsidian 對應筆記
 
-**Obsidian vault：** `j:\我的雲端硬碟\secondbrain\secondbrain`  
+**Obsidian vault：** `..\..\secondbrain\secondbrain` (相對於本專案根目錄)  
 **專案駕駛艙：** `klin-gantt-chart/專案工作流程.md`  
 **收工時優先更新：** 同上。
 
